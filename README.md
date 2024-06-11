@@ -26,17 +26,17 @@ Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _roo
 
 ```bash
 # using npm
-npm run android
+npm run android-run
 
 # OR using Yarn
-yarn android
+yarn android-run
 ```
 
 ### For iOS
 
 ```bash
 # using npm
-npm run ios
+npm run ios-run
 
 # OR using Yarn
 yarn ios
