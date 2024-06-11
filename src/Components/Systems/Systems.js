@@ -1,5 +1,6 @@
 import Matter from 'matter-js';
 import {createProjectile, createBlast} from '../Entities/Entities';
+import {Alert} from 'react-native';
 
 const Physics = (entities, {time, dispatch}) => {
   let engine = entities['physics'].engine;
@@ -20,29 +21,64 @@ const Physics = (entities, {time, dispatch}) => {
           (entityA.type === 'projectile' && entityB.type === 'tank') ||
           (entityB.type === 'projectile' && entityA.type === 'tank')
         ) {
-          // Handle collision
           const tank = entityA.type === 'tank' ? entityA : entityB;
           const projectile = entityA.type === 'projectile' ? entityA : entityB;
 
-          // Add blast animation
           const blast = createBlast(tank.body.position);
           entities[`blast_${Date.now()}`] = blast;
 
-          // Remove projectile
           Matter.World.remove(engine.world, projectile.body);
           delete entities[projectile.body.label];
 
-          // Set timeout to remove blast animation
           setTimeout(() => {
             delete entities[blast.id];
-          }, 500); // Adjust blast duration as needed
+          }, 500);
         }
       }
     });
   });
 
+  // Check tank positions
+  checkTankOutOfBounds(entities);
+
   return entities;
 };
+
+function checkTankOutOfBounds(entities) {
+  const screenWidth = 800; // Set the screen width
+  const screenHeight = 600; // Set the screen height
+  const threshold = 100; // Threshold in pixels
+
+  const tank1 = entities['tank1'];
+  const tank2 = entities['tank2'];
+
+  if (
+    tank1.body.position.x < -threshold ||
+    tank1.body.position.x > screenWidth + threshold ||
+    tank1.body.position.y < -threshold ||
+    tank1.body.position.y > screenHeight + threshold
+  ) {
+    showGameOverModal('tank2');
+  }
+
+  if (
+    tank2.body.position.x < -threshold ||
+    tank2.body.position.x > screenWidth + threshold ||
+    tank2.body.position.y < -threshold ||
+    tank2.body.position.y > screenHeight + threshold
+  ) {
+    showGameOverModal('tank1');
+  }
+}
+let gameOverAlertShown = false;
+
+function showGameOverModal(winningTankId) {
+  if (!gameOverAlertShown) {
+    Alert.alert(`Game Over! ${winningTankId} wins!`);
+    // console.log(`Game Over! ${winningTankId} wins!`);
+    gameOverAlertShown = true;
+  }
+}
 
 const MoveTank = (entities, {time, direction}) => {
   const moveSpeed = 10; // Speed at which the tank moves
@@ -87,6 +123,13 @@ const MoveTank = (entities, {time, direction}) => {
 };
 
 const FireTank1 = (entities, tank1) => {
+  // const impulseStrength = 0.05; // Adjust as needed
+
+  // Matter.Body.applyForce(tank1.body, tank1.body.position, {
+  //   x: impulseStrength,
+  //   y: 0,
+  // }); // Apply force
+
   const projectile = createProjectile(
     entities['physics'].world,
     'projectile',
@@ -100,6 +143,13 @@ const FireTank1 = (entities, tank1) => {
 };
 
 const FireTank2 = (entities, tank2) => {
+  // const impulseStrength = 0.05; // Adjust as needed
+
+  // Matter.Body.applyForce(tank2.body, tank2.body.position, {
+  //   x: -impulseStrength,
+  //   y: 0,
+  // });
+
   const projectile = createProjectile(
     entities['physics'].world,
     'projectile',
